@@ -24,3 +24,5 @@ df.final <- apply(df.eff[, id.f, ], 1, sum)
 
 # Run function
 result <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
+
+result$eff

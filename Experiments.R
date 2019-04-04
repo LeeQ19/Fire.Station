@@ -1,5 +1,6 @@
 # Load library
 library(DJL)
+source("dm.dea.intertemporal.R")
 
 # Experimental data
 df <- array(c(2, 4, 8, 1, 1, 1, 3, 6, 6, 2, 5, 5,

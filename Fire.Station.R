@@ -17,7 +17,7 @@ id.y     <- c(5:7)
 id.z     <- c(8)
 id.f     <- c(9)
 rts  <- "crs"
-orientation <- "i"
+orientation <- "o"
 
 # Preprocess data
 df.final <- apply(df.eff[, id.f, ], 1, sum)

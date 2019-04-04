@@ -49,27 +49,31 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
       for(i in 1:m){
         if(orientation == "i")
           add.constraint(lp.dea, c(xdata[, i, k], -xdata[j, i, k], 1), indices = c(1:n, n + k, n + t + m * (k - 1) + i), "=", 0)
+        else
+          add.constraint(lp.dea, c(xdata[, i, k], 1), indices = c(1:n, n + t + m * (k - 1) + i), "=", xdata[j, i, k])
       }
       # Stock constraints
       for(i in 1:b){
         if(orientation == "i")
           add.constraint(lp.dea, c(zdata[, i, k], -zdata[j, i, k], 1), indices = c(1:n, n + k, n + t + m * t + b * (k - 1) + i), "=", 0)
+        else
+          add.constraint(lp.dea, c(zdata[, i, k], 1), indices = c(1:n, n + t + m * t + b * (k - 1) + i), "=", zdata[j, i, k])
       }
       # Output constraints
       for(r in 1:s){
         if(orientation == "i")
           add.constraint(lp.dea, c(ydata[, r, k], -1), indices = c(1:n, n + t + m * t + b * t + s * (k - 1) + r), "=", ydata[j, r, k])
+        else
+          add.constraint(lp.dea, c(ydata[, r, k], -ydata[j, r, k], -1), indices = c(1:n, n + k, n + t + m * t + b * t + s * (k - 1) + r), "=", 0)
       }
     }
     # Initial Stock constraints
     for(i in 1:b){
-      if(orientation == "i")
-        add.constraint(lp.dea, c(initialz[, i], 1), indices = c(1:n, n + t + m * t + b * t + s * t + i), "=", initialz[j, i])
+      add.constraint(lp.dea, c(initialz[, i], 1), indices = c(1:n, n + t + m * t + b * t + s * t + i), "=", initialz[j, i])
     }
     # Final Stock constraints
     for(i in 1:b){
-      if(orientation == "i")
-        add.constraint(lp.dea, c(finalz[, i], -1), indices = c(1:n, n + t + m * t + b * t + s * t + b + i), "=", finalz[j, i])
+      add.constraint(lp.dea, c(finalz[, i], -1), indices = c(1:n, n + t + m * t + b * t + s * t + b + i), "=", finalz[j, i])
     }
     
     # Bounds

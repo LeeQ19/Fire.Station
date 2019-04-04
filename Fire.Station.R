@@ -13,11 +13,11 @@ df.eff   <- abind(split(df.raw[, c(-1, -11), ], df.raw[, c(-1, -11), ]$year), al
 # Parameter
 id.t     <- 1
 id.x     <- c(2:4)
-id.y     <- c(5:7)
+id.y     <- c(5:6)
 id.z     <- c(8)
 id.f     <- c(9)
 rts  <- "crs"
-orientation <- "o"
+orientation <- "i"
 
 # Preprocess data
 df.final <- apply(df.eff[, id.f, ], 1, sum)

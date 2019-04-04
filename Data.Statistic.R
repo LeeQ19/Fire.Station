@@ -8,7 +8,7 @@ library("ggplot2")
 # Load data
 df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
 
-# Set outlier
+# Set outliar
 id.out <- c(NA)
 df.clr <- df.raw[, ]
 

@@ -1,6 +1,6 @@
 dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orientation = "i"){
   # Load library
-  #library(lpSolveAPI)
+  library(lpSolveAPI)
   
   # Initial checks
   if(dim(xdata)[1] != dim(ydata)[1] | dim(xdata)[length(dim(xdata))] != dim(ydata)[length(dim(ydata))]) stop('Data must be balanced.')

@@ -2,25 +2,33 @@
 library(DJL)
 
 # Experimental data
-df <- array(c(2, 4, 8, 1, 1, 1, 3, 6, 6, 2, 5, 5,
-              5, 4, 3, 1, 1, 1, 5, 4, 3, 3, 2, 1),
-            c(3, 4, 2), 
-            dimnames = list(LETTERS[1:3], c("X", "Y", "z", "Z^t"), c("t1", "t2")))
+df.io <- array(c(2, 4, 8, 4, 1, 2, 2, 2, 3, 6, 12, 6,
+                 5, 4, 3, 8, 1, 1, 1, 1, 5, 4,  3, 8),
+               c(4, 3, 2), 
+               dimnames = list(LETTERS[1:4], c("X", "Y", "z"), c("t1", "t2")))
+df.zt <- array(c(2, 3, 5, 10), c(4, 1), dimnames = list(LETTERS[1:4], c("Z^t")))
+df.bg <- array(apply(df.io[,id.z,], 1, sum) + c(df.zt), c(4, 1), dimnames = list(LETTERS[1:4], c("Z^t")))
 
 # Parameter
 id.x <- c(1)
 id.y <- c(2)
 id.z <- c(3)
-id.f <- c(4)
 rts  <- "crs"
 ori  <- "i"
 
 # Run
-finalz <- apply(df[,id.f, ], 1, sum)
-res.it <- dm.dea.intertemporal(df[,id.x,], df[,id.y,], df[,id.z,], finalz, rts, ori)
-res.t1 <- dm.dea(df[,c(id.x, id.z), 1], df[,id.y, 1], rts, ori)
-res.t2 <- dm.dea(df[,c(id.x, id.z), 2], df[,id.y, 2], rts, ori)
+res.it <- dm.dea.intertemporal(df.io[,id.x,], df.io[,id.y,], df.io[,id.z,], df.zt, rts, ori)
+res.ba <- dm.dynamic.ba(df.io[,id.x,], df.io[,id.y,], df.io[,id.z,], df.bg, rts, ori)
+res.t1 <- dm.dea(df.io[,c(id.x, id.z), 1], df.io[,id.y, 1], rts, ori)
+res.t2 <- dm.dea(df.io[,c(id.x, id.z), 2], df.io[,id.y, 2], rts, ori)
 
 # Compare effs
-cbind(res.it$efft, res.t1$eff, res.t2$eff)
+cbind(res.it$efft, res.ba$eff.t, res.t1$eff, res.t2$eff)
 
+df.io
+
+data.frame(Z.0 = apply(df.io[,id.z,], 1, sum) + c(df.zt),
+           z   = df.io[,id.z,],
+           Z.T = c(df.zt))
+
+res.ba$lambda

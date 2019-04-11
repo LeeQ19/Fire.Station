@@ -9,8 +9,9 @@ library("ggplot2")
 df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
 
 # Set outlier
-id.out <- c(NA)
-df.clr <- df.raw[, ]
+id.out <- c(12, 46, 80, 114, 148, 
+            21, 55, 89, 123, 157)
+df.clr <- df.raw[-id.out, ]
 
 #########################################################################################################################
 ### Data Statistic

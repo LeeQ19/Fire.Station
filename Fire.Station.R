@@ -5,6 +5,7 @@
 # Load library
 library("abind")
 source("dm.dea.intertemporal.R")
+source("dm.dynamic.ba.R")
 
 # Load data
 df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
@@ -23,6 +24,7 @@ orientation <- "i"
 
 # Preprocess data
 df.final <- apply(df.eff[, id.f, ], 1, sum)
+df.init  <- apply(df.eff[, id.z, ], 1, sum) + apply(df.eff[, id.f, ], 1, sum)
 
 #########################################################################################################################
 ### Analysis

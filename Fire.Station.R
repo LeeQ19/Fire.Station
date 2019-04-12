@@ -3,7 +3,9 @@
 #########################################################################################################################
 
 # Load library
-library("abind")
+pkgs <- c("abind", "DJL")
+sapply(pkgs, require, character.only = T)
+
 source("dm.dea.intertemporal.R")
 source("dm.dynamic.ba.R")
 
@@ -30,7 +32,13 @@ df.init  <- apply(df.eff[, id.z, ], 1, sum) + apply(df.eff[, id.f, ], 1, sum)
 ### Analysis
 #########################################################################################################################
 
-# Run function
-result <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
+# Run intertemporal
+result.1 <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
 
-result$eff
+result.1$efft
+
+# Run budget allocation
+result.2 <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.init, rts, orientation)
+
+result.2$eff.t
+

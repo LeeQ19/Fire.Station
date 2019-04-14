@@ -33,12 +33,9 @@ df.init  <- apply(df.eff[, id.z, ], 1, sum) + apply(df.eff[, id.f, ], 1, sum)
 #########################################################################################################################
 
 # Run intertemporal
-result.1 <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
-
-result.1$efft
+result.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
+result.it$eff.t
 
 # Run budget allocation
-result.2 <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.init, rts, orientation)
-
-result.2$eff.t
-
+result.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.init, rts, orientation)
+result.ba$eff.t

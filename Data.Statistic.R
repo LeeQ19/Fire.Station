@@ -9,13 +9,19 @@ library("ggplot2")
 df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
 
 # Set outlier
-id.out <- c(12, 46, 80, 114, 148, 
-            21, 55, 89, 123, 157)
+id.out <- c(12, 46, 80, 114, 148)
 df.clr <- df.raw[-id.out, ]
 
 #########################################################################################################################
 ### Data Statistic
 #########################################################################################################################
+
+# Summary
+boxplot(scale(df.raw[, 3:10]))
+summary(df.raw[, 3:10])
+
+boxplot(scale(df.clr[, 3:10]))
+summary(df.clr[, 3:10])
 
 # Employee - Reduction.of.damage
 ggplot(df.clr, aes(x = Employee, y = Reduction.of.damage, color = Location)) + 

@@ -3,8 +3,11 @@
 #########################################################################################################################
 
 # Load library
-library("abind")
+pkgs <- c("abind", "DJL")
+sapply(pkgs, require, character.only = T)
+
 source("dm.dea.intertemporal.R")
+source("dm.dynamic.ba.R")
 
 # Load data
 df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
@@ -23,12 +26,16 @@ orientation <- "i"
 
 # Preprocess data
 df.final <- apply(df.eff[, id.f, ], 1, sum)
+df.init  <- apply(df.eff[, id.z, ], 1, sum) + apply(df.eff[, id.f, ], 1, sum)
 
 #########################################################################################################################
 ### Analysis
 #########################################################################################################################
 
-# Run function
-result <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
+# Run intertemporal
+result.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
+result.it$eff.t
 
-result$eff
+# Run budget allocation
+result.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.init, rts, orientation)
+result.ba$eff.t

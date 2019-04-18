@@ -20,12 +20,12 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
   t        <- dim(xdata)[3]
   
   # Data frames
-  results.efficiency  <- array(NA, dim = c(n, 1))
-  results.lambda      <- array(NA, dim = c(n, n))
-  results.efficiencyt <- array(NA, dim = c(n, t))
-  results.xslack      <- array(NA, dim = c(n, m, t))
-  results.yslack      <- array(NA, dim = c(n, s, t))
-  results.zslack      <- array(NA, dim = c(n, b, t))
+  results.efficiency   <- array(NA, dim = c(n, 1))
+  results.lambda       <- array(NA, dim = c(n, n))
+  results.efficiency.t <- array(NA, dim = c(n, t))
+  results.xslack       <- array(NA, dim = c(n, m, t))
+  results.yslack       <- array(NA, dim = c(n, s, t))
+  results.zslack       <- array(NA, dim = c(n, b, t))
   
   # LP
   for(j in 1:n){
@@ -95,21 +95,21 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
     solve.lpExtPtr(lp.dea)
     
     # Get results
-    results.efficiency[j]    <- abs(get.objective(lp.dea))
-    temp.p                   <- get.variables(lp.dea)
-    results.lambda[j, ]      <- temp.p[1:n]
-    results.efficiencyt[j, ] <- temp.p[(n + 1):(n + t)]
-    results.xslack[j, , ]    <- array(temp.p[(n + t + 1):(n + t + m * t)], dim = c(m, t))
-    results.yslack[j, , ]    <- array(temp.p[(n + t + m * t + 1):(n + t + m * t + s * t)], dim = c(s, t))
-    results.zslack[j, , ]    <- array(temp.p[(n + t + m * t + s * t + 1):(n + t + m * t + s * t + b * t)], dim = c(b, t))
+    results.efficiency[j]     <- abs(get.objective(lp.dea))
+    temp.p                    <- get.variables(lp.dea)
+    results.lambda[j, ]       <- temp.p[1:n]
+    results.efficiency.t[j, ] <- temp.p[(n + 1):(n + t)]
+    results.xslack[j, , ]     <- array(temp.p[(n + t + 1):(n + t + m * t)], dim = c(m, t))
+    results.yslack[j, , ]     <- array(temp.p[(n + t + m * t + 1):(n + t + m * t + s * t)], dim = c(s, t))
+    results.zslack[j, , ]     <- array(temp.p[(n + t + m * t + s * t + 1):(n + t + m * t + s * t + b * t)], dim = c(b, t))
   }
   
   # Store results
-  results <- list(eff    = results.efficiency, 
-                  efft   = results.efficiencyt, 
-                  lambda = results.lambda, 
-                  xslack = results.xslack, 
-                  yslack = results.yslack, 
-                  zslack = results.zslack)
+  results <- list(eff     = results.efficiency, 
+                  eff.t   = results.efficiency.t, 
+                  lambda  = results.lambda, 
+                  xslack  = results.xslack, 
+                  yslack  = results.yslack, 
+                  zslack  = results.zslack)
   return(results)
 }

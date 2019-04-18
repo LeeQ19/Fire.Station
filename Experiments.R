@@ -1,5 +1,7 @@
 # Load library
 library(DJL)
+source("dm.dea.intertemporal.R")
+source("dm.dynamic.ba.R")
 
 # Parameter
 id.x <- c(1)

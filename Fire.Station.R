@@ -3,7 +3,8 @@
 #########################################################################################################################
 
 # Load library
-library("ggplot2")
+pkgs <- c("ggplot2", "DJL")
+sapply(pkgs, require, character.only = T)
 
 # Load function
 source("dm.dynamic.ba.R")
@@ -74,6 +75,6 @@ res.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z
 res.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.initial, rts, orientation)
 
 # Compare results
-matrix(c(res.it$efft, res.ba$eff.t), nrow(df.eff[,,1]), 
-       dimnames = list(levels(df.raw$DMU), 
+matrix(c(res.it$eff.t, res.ba$eff.t), nrow(df.eff[,,1]), 
+       dimnames = list(unique(df.raw[-id.out,]$DMU), 
                        c(paste0("it.", 2012:2016), paste0("ba.", 2012:2016))))

@@ -3,17 +3,20 @@
 #########################################################################################################################
 
 # Load library
-pkgs <- c("abind", "DJL")
+pkgs <- c("ggplot2", "DJL")
 sapply(pkgs, require, character.only = T)
 
-source("dm.dea.intertemporal.R")
+# Load function
 source("dm.dynamic.ba.R")
+source("dm.dea.intertemporal.R")
 
 # Load data
 df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
 
-# Preprocess data
-df.eff <- abind(split(df.raw[, c(-1, -11), ], df.raw[, c(-1, -11), ]$Year), along = 3)
+# Set outlier
+id.out <- c(12, 46, 80, 114, 148)
+df.eff <- simplify2array(by(df.raw[-id.out, -c(1, 11)], df.raw[-id.out, ]$Year, as.matrix))
+
 
 # Parameter
 id.t        <- 1
@@ -25,17 +28,53 @@ rts         <- "crs"
 orientation <- "i"
 
 # Preprocess data
-df.final <- apply(df.eff[, id.f, ], 1, sum)
-df.init  <- apply(df.eff[, id.z, ], 1, sum) + apply(df.eff[, id.f, ], 1, sum)
+df.final   <- apply(df.eff[, id.f, ], 1, sum)
+df.initial <- apply(df.eff[, id.z, ], 1, sum) + df.final
+
+#########################################################################################################################
+### Descriptive Statistics
+#########################################################################################################################
+
+# Summary
+boxplot(scale(df.raw[, 3:10]))
+summary(df.raw[, 3:10])
+
+boxplot(scale(df.raw[-id.out, 3:10]))
+summary(df.raw[-id.out, 3:10])
+
+# Employee - Reduction.of.damage
+ggplot(df.raw[-id.out, ], aes(x = Employee, y = Reduction.of.damage, color = Location)) + 
+  geom_point()
+
+# Employee - Rescue
+ggplot(df.raw[-id.out, ], aes(x = Employee, y = Rescue, color = Location)) + 
+  geom_point()
+
+# Ambulance - Reduction.of.damage
+ggplot(df.raw[-id.out, ], aes(x = Ambulance, y = Reduction.of.damage, color = Location)) + 
+  geom_point()
+
+# Ambulance - Rescue
+ggplot(df.raw[-id.out, ], aes(x = Ambulance, y = Rescue, color = Location)) + 
+  geom_point()
+
+# Firewagon - Reduction.of.damage
+ggplot(df.raw[-id.out, ], aes(x = Firewagon, y = Reduction.of.damage, color = Location)) + 
+  geom_point()
+
+# Firewagon - Rescue
+ggplot(df.raw[-id.out, ], aes(x = Firewagon, y = Rescue, color = Location)) + 
+  geom_point()
 
 #########################################################################################################################
 ### Analysis
 #########################################################################################################################
 
-# Run intertemporal
-result.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
-result.it$eff.t
+# Run function
+res.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
+res.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.initial, rts, orientation)
 
-# Run budget allocation
-result.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.init, rts, orientation)
-result.ba$eff.t
+# Compare results
+matrix(c(res.it$eff.t, res.ba$eff.t), nrow(df.eff[,,1]), 
+       dimnames = list(unique(df.raw[-id.out,]$DMU), 
+                       c(paste0("it.", 2012:2016), paste0("ba.", 2012:2016))))

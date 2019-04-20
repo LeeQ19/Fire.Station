@@ -38,6 +38,7 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
   p.zsl <- n*t + t + m*t + 1
   p.ysl <- n*t + t + m*t + b*t + 1
   p.asl <- n*t + t + m*t + b*t + s*t + 1
+  p.end <- n*t + t + m*t + b*t + s*t + b*t + 1
   
   # LP
   for(j in 1:n){
@@ -89,7 +90,7 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
     }
     
     # Bounds
-    set.bounds(lp.ba, lower = c(rep(0, n*t), rep(-Inf, t), rep(0, p.asl - p.eff)))
+    set.bounds(lp.ba, lower = c(rep(0, n*t), rep(-Inf, t), rep(0, p.end - p.xsl)))
     
     # Solve
     solve.lpExtPtr(lp.ba)

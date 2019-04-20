@@ -26,21 +26,33 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
   results.xslack       <- array(NA, dim = c(n, m, t))
   results.yslack       <- array(NA, dim = c(n, s, t))
   results.zslack       <- array(NA, dim = c(n, b, t))
+  results.islack       <- array(NA, dim = c(n, b, t))
+  results.fslack       <- array(NA, dim = c(n, b, t))
+  
+  
+  # Pointers
+  p.eff <- n + 1
+  p.xsl <- n + t + 1
+  p.zsl <- n + t + m*t + 1
+  p.ysl <- n + t + m*t + b*t + 1
+  p.isl <- n + t + m*t + b*t + s*t + 1
+  p.fsl <- n + t + m*t + b*t + s*t + b + 1
+  p.end <- n + t + m*t + b*t + s*t + b + b + 1
   
   # LP
   for(j in 1:n){
     # Declare LP
-    lp.dea <- make.lp(0, n + t + m * t + b * t + s * t + b + b) # lambda+efficiency+xslack+zslack+yslack+initialZslack+finalZslack
+    lp.it <- make.lp(0, n + t + m*t + b*t + s*t + b + b) # lambda + eff + xslack + zslack + yslack + initialZslack + finalZslack
     
     # Set objective
-    if(orientation == "i") set.objfn(lp.dea, c(rep( 1/t, t)),  indices = c((n + 1):(n + t)))
-    if(orientation == "o") set.objfn(lp.dea, c(rep(-1/t, t)), indices = c((n + 1):(n + t)))
+    if(orientation == "i") set.objfn(lp.it, c(rep( 1/t, t)), indices = c(p.eff:(p.xsl - 1)))
+    if(orientation == "o") set.objfn(lp.it, c(rep(-1/t, t)), indices = c(p.eff:(p.xsl - 1)))
     
     # RTS
-    if(rts == "vrs") add.constraint(lp.dea, c(rep(1, n)), indices = c(1:n), "=", 1)
-    if(rts == "crs") set.constr.type(lp.dea, 0, 1)
-    if(rts == "irs") add.constraint(lp.dea, c(rep(1, n)), indices = c(1:n), ">=", 1)
-    if(rts == "drs") add.constraint(lp.dea, c(rep(1, n)), indices = c(1:n), "<=", 1)
+    if(rts == "vrs") add.constraint(lp.it, c(rep(1, n)), indices = c(1:n), "=", 1)
+    if(rts == "crs") set.constr.type(lp.it, 0, 1)
+    if(rts == "irs") add.constraint(lp.it, c(rep(1, n)), indices = c(1:n), ">=", 1)
+    if(rts == "drs") add.constraint(lp.it, c(rep(1, n)), indices = c(1:n), "<=", 1)
     
     # LP
     for(k in 1:t){
@@ -48,60 +60,81 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
       # Input constraint
       for(i in 1:m){
         if(orientation == "i"){
-          add.constraint(lp.dea, c(xdata[, i, k], -xdata[j, i, k], 1), indices = c(1:n, n + k, n + t + m * (k - 1) + i), "=", 0)
+          add.constraint(lp.it, c(xdata[, i, k], -xdata[j, i, k], 1), indices = c(1:n, n + k, p.xsl - 1 + m*(k - 1) + i), "=", 0)
         }else{
-          add.constraint(lp.dea, c(xdata[, i, k], 1), indices = c(1:n, n + t + m * (k - 1) + i), "=", xdata[j, i, k])
+          add.constraint(lp.it, c(xdata[, i, k], 1), indices = c(1:n, p.xsl - 1 + m*(k - 1) + i), "=", xdata[j, i, k])
         }
       }
       
       # Stock constraint
       for(i in 1:b){
         if(orientation == "i"){
-          add.constraint(lp.dea, c(zdata[, i, k], -zdata[j, i, k], 1), indices = c(1:n, n + k, n + t + m * t + b * (k - 1) + i), "=", 0)
+          add.constraint(lp.it, c(zdata[, i, k], -zdata[j, i, k], 1), indices = c(1:n, n + k, p.zsl - 1 + b*(k - 1) + i), "=", 0)
         }else{
-          add.constraint(lp.dea, c(zdata[, i, k], 1), indices = c(1:n, n + t + m * t + b * (k - 1) + i), "=", zdata[j, i, k])
+          add.constraint(lp.it, c(zdata[, i, k], 1), indices = c(1:n, p.zsl - 1 + b*(k - 1) + i), "=", zdata[j, i, k])
         }
       }
       
       # Output constraint
       for(r in 1:s){
         if(orientation == "i"){
-          add.constraint(lp.dea, c(ydata[, r, k], -1), indices = c(1:n, n + t + m * t + b * t + s * (k - 1) + r), "=", ydata[j, r, k])
+          add.constraint(lp.it, c(ydata[, r, k], -1), indices = c(1:n, p.ysl - 1 + s*(k - 1) + r), "=", ydata[j, r, k])
         }else{
-          add.constraint(lp.dea, c(ydata[, r, k], -ydata[j, r, k], -1), indices = c(1:n, n + k, n + t + m * t + b * t + s * (k - 1) + r), "=", 0)
+          add.constraint(lp.it, c(ydata[, r, k], -ydata[j, r, k], -1), indices = c(1:n, n + k, p.ysl - 1 + s*(k - 1) + r), "=", 0)
         }
       }
     }
     
     # Initial stock constraints
     for(i in 1:b){
-      add.constraint(lp.dea, c(initialz[, i], 1), indices = c(1:n, n + t + m * t + b * t + s * t + i), "=", initialz[j, i])
+      add.constraint(lp.it, c(initialz[, i], 1), indices = c(1:n, p.isl - 1 + i), "=", initialz[j, i])
     }
     
     # Final stock constraints
     for(i in 1:b){
-      add.constraint(lp.dea, c(finalz[, i], -1), indices = c(1:n, n + t + m * t + b * t + s * t + b + i), "=", finalz[j, i])
+      add.constraint(lp.it, c(finalz[, i], -1), indices = c(1:n, p.fsl - 1 + i), "=", finalz[j, i])
     }
     
     # Bounds
     if(orientation == "i"){
-      set.bounds(lp.dea, upper = c(rep(Inf, n), rep(   1, t), rep(Inf, m * t + b * t + s * t + b + b)))  
-      set.bounds(lp.dea, lower = c(rep(0,   n), rep(-Inf, t), rep(0,   m * t + b * t + s * t + b + b)))
+      set.bounds(lp.it, upper = c(rep(Inf, n), rep(   1, t), rep(Inf, p.end - p.xsl)))  
+      set.bounds(lp.it, lower = c(rep(0,   n), rep(-Inf, t), rep(  0, p.end - p.xsl)))
     }else{
-      set.bounds(lp.dea, lower = c(rep(0,   n), rep(   1, t), rep(0,   m * t + b * t + s * t + b + b)))
+      set.bounds(lp.it, lower = c(rep(0,   n), rep(   1, t), rep(  0, p.end - p.xsl)))
     }
     
     # Solve
-    solve.lpExtPtr(lp.dea)
+    solve.lpExtPtr(lp.it)
     
     # Get results
-    results.efficiency[j]     <- abs(get.objective(lp.dea))
-    temp.p                    <- get.variables(lp.dea)
+    results.efficiency[j]     <- abs(get.objective(lp.it))
+    temp.p                    <- get.variables(lp.it)
     results.lambda[j, ]       <- temp.p[1:n]
-    results.efficiency.t[j, ] <- temp.p[(n + 1):(n + t)]
-    results.xslack[j, , ]     <- array(temp.p[(n + t + 1):(n + t + m * t)], dim = c(m, t))
-    results.yslack[j, , ]     <- array(temp.p[(n + t + m * t + 1):(n + t + m * t + s * t)], dim = c(s, t))
-    results.zslack[j, , ]     <- array(temp.p[(n + t + m * t + s * t + 1):(n + t + m * t + s * t + b * t)], dim = c(b, t))
+    results.efficiency.t[j, ] <- temp.p[p.eff:(p.xsl - 1)]
+    results.xslack[j, , ]     <- array(temp.p[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j, , ]     <- array(temp.p[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j, , ]     <- array(temp.p[p.ysl:(p.isl - 1)], c(s, t))
+    results.islack[j, , ]     <- array(temp.p[p.isl:(p.fsl - 1)], c(b, t))
+    results.fslack[j, , ]     <- array(temp.p[p.fsl:(p.end - 1)], c(b, t))
+    
+    # Stage II
+    # Link previous solutions
+    add.constraint(lp.it, rep(1, t), indices = c(p.eff:(p.xsl - 1)), "=", results.efficiency.t[j])
+
+    # Slack sum max
+    set.objfn(lp.it, c(rep(-1, (p.end - p.xsl))), indices = c(p.xsl:(p.end - 1)))
+
+    # Solve
+    solve.lpExtPtr(lp.it)
+
+    # Get results
+    temp.s                <- get.variables(lp.it)
+    results.lambda[j, ]   <- temp.s[1:n]
+    results.xslack[j, , ] <- array(temp.s[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j, , ] <- array(temp.s[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j, , ] <- array(temp.s[p.ysl:(p.isl - 1)], c(s, t))
+    results.islack[j, , ] <- array(temp.s[p.isl:(p.fsl - 1)], c(b, t))
+    results.fslack[j, , ] <- array(temp.s[p.fsl:(p.end - 1)], c(b, t))
   }
   
   # Store results
@@ -110,6 +143,8 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
                   lambda  = results.lambda, 
                   xslack  = results.xslack, 
                   yslack  = results.yslack, 
-                  zslack  = results.zslack)
+                  zslack  = results.zslack, 
+                  islack  = results.islack, 
+                  fslack  = results.fslack)
   return(results)
 }

@@ -100,11 +100,28 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
     temp.p                   <- get.variables(lp.ba)
     results.lambda[j,,]      <- array(temp.p[1:(n*t)], c(n, t))
     results.efficiency.t[j,] <- temp.p[p.eff:(p.xsl - 1)]
-    results.xslack[j,,]      <- array(temp.p[p.xsl:(p.zsl - 1)],    c(m, t))
-    results.zslack[j,,]      <- array(temp.p[p.zsl:(p.ysl - 1)],    c(b, t))
-    results.yslack[j,,]      <- array(temp.p[p.ysl:(p.asl - 1)],    c(s, t))
-    results.yslack[j,,]      <- array(temp.p[p.ysl:(p.asl - 1)],    c(s, t))
-    results.aslack[j,,]      <- array(temp.p[p.asl:length(temp.p)], c(1, t))
+    results.xslack[j,,]      <- array(temp.p[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j,,]      <- array(temp.p[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j,,]      <- array(temp.p[p.ysl:(p.asl - 1)], c(s, t))
+    results.aslack[j,,]      <- array(temp.p[p.asl:(p.end - 1)], c(1, t))
+    
+    # Stage II
+    # Link previous solutions
+    add.constraint(lp.ba, rep(1, t), indices = c(p.eff:(p.xsl - 1)), "=", results.efficiency.t[j])
+    
+    # slack sum max
+    set.objfn(lp.ba, c(rep(-1, (p.end - p.xsl))), indices = c(p.xsl:(p.end - 1)))
+    
+    # solve
+    solve.lpExtPtr(lp.ba)
+    
+    # Get results
+    temp.s              <- get.variables(lp.ba)
+    results.lambda[j,,] <- array(temp.s[1:(n*t)],           c(n, t))
+    results.xslack[j,,] <- array(temp.s[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j,,] <- array(temp.s[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j,,] <- array(temp.s[p.ysl:(p.asl - 1)], c(s, t))
+    results.aslack[j,,] <- array(temp.s[p.asl:(p.end - 1)], c(1, t))
   }
   
   # Store results

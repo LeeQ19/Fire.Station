@@ -109,13 +109,7 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
     # Get results
     results.efficiency[j]     <- abs(get.objective(lp.it))
     temp.p                    <- get.variables(lp.it)
-    results.lambda[j, ]       <- temp.p[1:n]
     results.efficiency.t[j, ] <- temp.p[p.eff:(p.xsl - 1)]
-    results.xslack[j, , ]     <- array(temp.p[p.xsl:(p.zsl - 1)], c(m, t))
-    results.zslack[j, , ]     <- array(temp.p[p.zsl:(p.ysl - 1)], c(b, t))
-    results.yslack[j, , ]     <- array(temp.p[p.ysl:(p.isl - 1)], c(s, t))
-    results.islack[j, , ]     <- array(temp.p[p.isl:(p.fsl - 1)], c(b, t))
-    results.fslack[j, , ]     <- array(temp.p[p.fsl:(p.end - 1)], c(b, t))
     
     # Stage II
     # Link previous solutions

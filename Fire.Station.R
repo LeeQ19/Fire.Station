@@ -2,78 +2,79 @@
 ### Setting up Environment
 #########################################################################################################################
 
-# Load library
-library("ggplot2")
-
-# Load function
+# Load library and functions
+pkgs <- c("DJL", "ggplot2")
+sapply(pkgs, require, character.only = T)
 source("dm.dynamic.ba.R")
 source("dm.dea.intertemporal.R")
 
 # Load data
-df.raw <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
-
-# Set outlier
-id.out <- c(12, 46, 80, 114, 148)
-df.eff <- simplify2array(by(df.raw[-id.out, -c(1, 11)], df.raw[-id.out, ]$Year, as.matrix))
-
+df.2d  <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
+df.3d  <- simplify2array(by(df.2d[, -c(1, 11)], df.2d$Year, as.matrix))
+id.out <- c(12)
+df.eff <- df.3d[-id.out,,]
 
 # Parameter
-id.t        <- 1
-id.x        <- c(2:4)
-id.y        <- c(5:6)
-id.z        <- c(8)
-id.f        <- c(9)
-rts         <- "crs"
-orientation <- "i"
+id.t <- c(1)
+id.x <- c(2:4)
+id.y <- c(5:6)
+id.z <- c(8)
+id.f <- c(9)
+rts  <- "vrs"
+ori  <- "i"
 
-# Preprocess data
-df.final   <- apply(df.eff[, id.f, ], 1, sum)
-df.initial <- apply(df.eff[, id.z, ], 1, sum) + df.final
+# Budget
+df.Z.T <- apply(df.eff[, id.f, ], 1, sum)
+df.Z.0 <- apply(df.eff[, id.z, ], 1, sum) + df.Z.T
+
 
 #########################################################################################################################
 ### Descriptive Statistics
 #########################################################################################################################
 
 # Summary
-boxplot(scale(df.raw[, 3:10]))
-summary(df.raw[, 3:10])
-
-boxplot(scale(df.raw[-id.out, 3:10]))
-summary(df.raw[-id.out, 3:10])
+boxplot(scale(df.2d[, 3:10]))
+summary(df.2d[, 3:10])
 
 # Employee - Reduction.of.damage
-ggplot(df.raw[-id.out, ], aes(x = Employee, y = Reduction.of.damage, color = Location)) + 
+ggplot(df.2d, aes(x = Employee, y = Reduction.of.damage, color = Location)) + 
   geom_point()
 
 # Employee - Rescue
-ggplot(df.raw[-id.out, ], aes(x = Employee, y = Rescue, color = Location)) + 
+ggplot(df.2d, aes(x = Employee, y = Rescue, color = Location)) + 
   geom_point()
 
 # Ambulance - Reduction.of.damage
-ggplot(df.raw[-id.out, ], aes(x = Ambulance, y = Reduction.of.damage, color = Location)) + 
+ggplot(df.2d, aes(x = Ambulance, y = Reduction.of.damage, color = Location)) + 
   geom_point()
 
 # Ambulance - Rescue
-ggplot(df.raw[-id.out, ], aes(x = Ambulance, y = Rescue, color = Location)) + 
+ggplot(df.2d, aes(x = Ambulance, y = Rescue, color = Location)) + 
   geom_point()
 
 # Firewagon - Reduction.of.damage
-ggplot(df.raw[-id.out, ], aes(x = Firewagon, y = Reduction.of.damage, color = Location)) + 
+ggplot(df.2d, aes(x = Firewagon, y = Reduction.of.damage, color = Location)) + 
   geom_point()
 
 # Firewagon - Rescue
-ggplot(df.raw[-id.out, ], aes(x = Firewagon, y = Rescue, color = Location)) + 
+ggplot(df.2d, aes(x = Firewagon, y = Rescue, color = Location)) + 
   geom_point()
+
 
 #########################################################################################################################
 ### Analysis
 #########################################################################################################################
 
 # Run function
-res.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.final, rts, orientation)
-res.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.initial, rts, orientation)
+res.it <- dm.dea.intertemporal(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.Z.T, rts, ori)
+res.ba <- dm.dynamic.ba(df.eff[, id.x, ], df.eff[, id.y, ], df.eff[, id.z, ], df.Z.0, rts, ori)
+res.pw <- cbind(dm.dea(df.eff[, c(id.x, id.z), 1], df.eff[, id.y, 1], rts, ori)$eff,
+                dm.dea(df.eff[, c(id.x, id.z), 2], df.eff[, id.y, 2], rts, ori)$eff,
+                dm.dea(df.eff[, c(id.x, id.z), 3], df.eff[, id.y, 3], rts, ori)$eff,
+                dm.dea(df.eff[, c(id.x, id.z), 4], df.eff[, id.y, 4], rts, ori)$eff,
+                dm.dea(df.eff[, c(id.x, id.z), 5], df.eff[, id.y, 5], rts, ori)$eff)
 
 # Compare results
-matrix(c(res.it$efft, res.ba$eff.t), nrow(df.eff[,,1]), 
-       dimnames = list(levels(df.raw$DMU), 
-                       c(paste0("it.", 2012:2016), paste0("ba.", 2012:2016))))
+matrix(c(res.it$eff.t, res.ba$eff.t, res.pw), nrow(df.eff[,,1]), 
+       dimnames = list(unique(df.2d$DMU)[-id.out], 
+                       c(paste0("it.", 2012:2016), paste0("ba.", 2012:2016), paste0("in.", 2012:2016))))

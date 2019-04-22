@@ -121,7 +121,7 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
     results.xslack[j,,] <- array(temp.s[p.xsl:(p.zsl - 1)], c(m, t))
     results.zslack[j,,] <- array(temp.s[p.zsl:(p.ysl - 1)], c(b, t))
     results.yslack[j,,] <- array(temp.s[p.ysl:(p.asl - 1)], c(s, t))
-    results.aslack[j,,] <- array(temp.s[p.asl:(p.end - 1)], c(1, t))
+    results.aslack[j,,] <- array(temp.s[p.asl:(p.end - 1)], c(b, t))
   }
   
   # Store results

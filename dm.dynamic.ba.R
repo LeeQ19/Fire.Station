@@ -21,7 +21,7 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
   
   # Budget available at each T
   zt     <- array(budget, c(n, t))
-  for(i in 2:t){zt[, i] <- zt[, i - 1] - zdata[,, (i - 1), drop = F]}
+  for(i in 2:t){zt[, i] <- zt[, i - 1] - rowSums(zdata[,, 1:(i - 1), drop = F])}
   
   # Data frames
   results.lambda       <- array(NA, dim = c(n, n, t))

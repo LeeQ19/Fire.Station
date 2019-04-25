@@ -58,8 +58,3 @@ print(table.2[, c(1, 2, 3, 8, 4, 9, 5, 10, 6, 11, 7, 12)])
 
 # How many system efficient DMUs?
 apply(table.2[, 1:2], 2, function(x) sum(round(x, 8) == 1))
-
-# Budget available at each T
-df.A.t <- array(df.Z.0, dim(df.3d)[c(1, 3)])
-for(i in 2:dim(df.3d)[3]){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}
-

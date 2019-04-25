@@ -10,16 +10,15 @@ source("dm.dea.intertemporal.R")
 
 # Load data
 df.2d  <- read.csv(url("http://bit.ly/Fire4Data"), header = T)
-df.3d  <- simplify2array(by(df.2d[, -c(1, 11)], df.2d$Year, as.matrix))
-id.out <- c(12)
-df.eff <- df.3d[-id.out,,]
+df.eff  <- simplify2array(by(df.2d[, -c(1, 11)], df.2d$Year, as.matrix))
+
 
 # Parameter
 id.t <- c(1)
 id.x <- c(2:4)
 id.y <- c(5:6)
-id.z <- c(8)
-id.f <- c(9)
+id.z <- c(7)
+id.f <- c(8)
 rts  <- "vrs"
 ori  <- "i"
 
@@ -33,33 +32,16 @@ df.Z.0 <- apply(df.eff[, id.z, ], 1, sum) + df.Z.T
 #########################################################################################################################
 
 # Summary
-boxplot(scale(df.2d[, 3:10]))
-summary(df.2d[, 3:10])
+boxplot(scale(df.2d[, 3:9]))
+summary(df.2d[, 3:9])
 
-# Employee - Reduction.of.damage
-ggplot(df.2d, aes(x = Employee, y = Reduction.of.damage, color = Location)) + 
-  geom_point()
-
-# Employee - Rescue
-ggplot(df.2d, aes(x = Employee, y = Rescue, color = Location)) + 
-  geom_point()
-
-# Ambulance - Reduction.of.damage
-ggplot(df.2d, aes(x = Ambulance, y = Reduction.of.damage, color = Location)) + 
-  geom_point()
-
-# Ambulance - Rescue
-ggplot(df.2d, aes(x = Ambulance, y = Rescue, color = Location)) + 
-  geom_point()
-
-# Firewagon - Reduction.of.damage
-ggplot(df.2d, aes(x = Firewagon, y = Reduction.of.damage, color = Location)) + 
-  geom_point()
-
-# Firewagon - Rescue
-ggplot(df.2d, aes(x = Firewagon, y = Rescue, color = Location)) + 
-  geom_point()
-
+# Table.1
+table.1 <- sapply(df.2d[, c(id.x, id.z, id.y) + 1], function(x) c(Min  = min(x), 
+                                                                  Med  = median(x), 
+                                                                  Mean = mean(x), 
+                                                                  Max  = max(x), 
+                                                                  Std  = sd(x)))
+print(noquote(format(round(t(table.1), 2), big.mark = ",")))
 
 #########################################################################################################################
 ### Analysis
@@ -76,5 +58,21 @@ res.pw <- cbind(dm.dea(df.eff[, c(id.x, id.z), 1], df.eff[, id.y, 1], rts, ori)$
 
 # Compare results
 matrix(c(res.it$eff.t, res.ba$eff.t, res.pw), nrow(df.eff[,,1]), 
-       dimnames = list(unique(df.2d$DMU)[-id.out], 
+       dimnames = list(unique(df.2d$DMU), 
                        c(paste0("it.", 2012:2016), paste0("ba.", 2012:2016), paste0("in.", 2012:2016))))
+
+# Table.2
+table.2 <- data.frame(Name    = unique(df.2d$DMU), 
+                      it.avg  = round(res.it$eff,        4),
+                      ba.avg  = round(res.ba$eff,        4),
+                      it.2012 = round(res.it$eff.t[, 1], 4), 
+                      ba.2012 = round(res.ba$eff.t[, 1], 4), 
+                      it.2013 = round(res.it$eff.t[, 2], 4), 
+                      ba.2013 = round(res.ba$eff.t[, 2], 4), 
+                      it.2014 = round(res.it$eff.t[, 3], 4), 
+                      ba.2014 = round(res.ba$eff.t[, 3], 4), 
+                      it.2015 = round(res.it$eff.t[, 4], 4), 
+                      ba.2015 = round(res.ba$eff.t[, 4], 4), 
+                      it.2016 = round(res.it$eff.t[, 5], 4), 
+                      ba.2016 = round(res.ba$eff.t[, 5], 4))
+print(table.2)

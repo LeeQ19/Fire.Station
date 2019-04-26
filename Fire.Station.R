@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 # Load library and functions
-pkgs <- c("DJL", "ggplot2")
+pkgs <- c("DJL")
 sapply(pkgs, require, character.only = T)
 source("dm.dynamic.ba.R")
 source("dm.dea.intertemporal.R")
@@ -42,7 +42,7 @@ table.1 <- sapply(df.aggr, function(x) c(Min  = min(x),
                                          Max  = max(x), 
                                          Std  = sd(x)))
 
-print(noquote(format(round(t(table.1), 2), big.mark = ",")))
+noquote(format(round(t(table.1), 2), big.mark = ","))
 
 
 # Table 2. Comparative results of efficiency
@@ -58,3 +58,20 @@ print(table.2[, c(1, 2, 3, 8, 4, 9, 5, 10, 6, 11, 7, 12)])
 
 # How many system efficient DMUs?
 apply(table.2[, 1:2], 2, function(x) sum(round(x, 8) == 1))
+
+
+# Footnote 5
+summary(lm((table.2[,1] - table.2[,2]) ~ df.Z.T))
+
+
+# Table 3. Namyangju
+id.nyj  <- which(rownames(table.2) == "Namyangju")
+table.3 <- rbind(df.aggr[id.nyj + 33 * 0:4, -7],
+                 aggregate(df.aggr[, -7], list(df.2d$Year), "mean")[, -1])
+rownames(table.3) <- c(2012:2016, paste0("Avg.", 2012:2016))
+round(t(table.3[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
+
+
+# Budget available at each T
+df.A.t <- array(df.Z.0, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))
+for(i in 2:dim(df.3d)[3]){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}

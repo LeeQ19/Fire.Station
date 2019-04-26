@@ -64,13 +64,26 @@ apply(table.2[, 1:2], 2, function(x) sum(round(x, 8) == 1))
 summary(lm((table.2[,1] - table.2[,2]) ~ df.Z.T))
 
 
-# Table 3. Namyangju
-id.nyj  <- which(rownames(table.2) == "Namyangju")
-table.3 <- rbind(df.aggr[id.nyj + 33 * 0:4, -7],
-                 aggregate(df.aggr[, -7], list(df.2d$Year), "mean")[, -1])
-rownames(table.3) <- c(2012:2016, paste0("Avg.", 2012:2016))
-round(t(table.3[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
+# Table 3.1 Namyangju
+id.nyj    <- which(rownames(table.2) == "Namyangju")
+table.3.1 <- rbind(df.aggr[id.nyj + 33 * 0:4, -7],
+                   aggregate(df.aggr[, -7], list(df.2d$Year), "mean")[, -1])
+rownames(table.3.1) <- c(2012:2016, paste0("Avg.", 2012:2016))
+round(t(table.3.1[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
 
+# Table 3.2 Osan
+id.osn    <- which(rownames(table.2) == "Osan")
+table.3.2 <- rbind(df.aggr[id.osn + 33 * 0:4, -7],
+                   aggregate(df.aggr[, -7], list(df.2d$Year), "mean")[, -1])
+rownames(table.3.2) <- c(2012:2016, paste0("Avg.", 2012:2016))
+round(t(table.3.2[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
+
+# Table 3.3 Yeoju
+id.yj  <- which(rownames(table.2) == "Yeoju")
+table.3.3 <- rbind(df.aggr[id.yj + 33 * 0:4, -7],
+                   aggregate(df.aggr[, -7], list(df.2d$Year), "mean")[, -1])
+rownames(table.3.3) <- c(2012:2016, paste0("Avg.", 2012:2016))
+round(t(table.3.3[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
 
 # Budget available at each T
 df.A.t <- array(df.Z.0, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))

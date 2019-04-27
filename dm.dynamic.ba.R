@@ -38,6 +38,7 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
   p.zsl <- n*t + t + m*t + 1
   p.ysl <- n*t + t + m*t + b*t + 1
   p.asl <- n*t + t + m*t + b*t + s*t + 1
+  p.end <- n*t + t + m*t + b*t + s*t + b*t + 1
   
   # LP
   for(j in 1:n){
@@ -89,7 +90,7 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
     }
     
     # Bounds
-    set.bounds(lp.ba, lower = c(rep(0, n*t), rep(-Inf, t), rep(0, p.asl - p.eff)))
+    set.bounds(lp.ba, lower = c(rep(0, n*t), rep(-Inf, t), rep(0, p.end - p.xsl)))
     
     # Solve
     solve.lpExtPtr(lp.ba)
@@ -99,11 +100,28 @@ dm.dynamic.ba <- function(xdata, ydata, zdata, budget, rts = "crs", orientation 
     temp.p                   <- get.variables(lp.ba)
     results.lambda[j,,]      <- array(temp.p[1:(n*t)], c(n, t))
     results.efficiency.t[j,] <- temp.p[p.eff:(p.xsl - 1)]
-    results.xslack[j,,]      <- array(temp.p[p.xsl:(p.zsl - 1)],    c(m, t))
-    results.zslack[j,,]      <- array(temp.p[p.zsl:(p.ysl - 1)],    c(b, t))
-    results.yslack[j,,]      <- array(temp.p[p.ysl:(p.asl - 1)],    c(s, t))
-    results.yslack[j,,]      <- array(temp.p[p.ysl:(p.asl - 1)],    c(s, t))
-    results.aslack[j,,]      <- array(temp.p[p.asl:length(temp.p)], c(1, t))
+    results.xslack[j,,]      <- array(temp.p[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j,,]      <- array(temp.p[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j,,]      <- array(temp.p[p.ysl:(p.asl - 1)], c(s, t))
+    results.aslack[j,,]      <- array(temp.p[p.asl:(p.end - 1)], c(1, t))
+    
+    # Stage II
+    # Link previous solutions
+    add.constraint(lp.ba, rep(1, t), indices = c(p.eff:(p.xsl - 1)), "=", results.efficiency.t[j])
+    
+    # slack sum max
+    set.objfn(lp.ba, c(rep(-1, (p.end - p.xsl))), indices = c(p.xsl:(p.end - 1)))
+    
+    # solve
+    solve.lpExtPtr(lp.ba)
+    
+    # Get results
+    temp.s              <- get.variables(lp.ba)
+    results.lambda[j,,] <- array(temp.s[1:(n*t)],           c(n, t))
+    results.xslack[j,,] <- array(temp.s[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j,,] <- array(temp.s[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j,,] <- array(temp.s[p.ysl:(p.asl - 1)], c(s, t))
+    results.aslack[j,,] <- array(temp.s[p.asl:(p.end - 1)], c(b, t))
   }
   
   # Store results

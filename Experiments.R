@@ -25,7 +25,7 @@ res.t1 <- dm.dea(df.io[,c(id.x, id.z), 1], df.io[,id.y, 1], rts, ori)
 res.t2 <- dm.dea(df.io[,c(id.x, id.z), 2], df.io[,id.y, 2], rts, ori)
 
 # Compare effs
-cbind(res.it$efft, res.ba$eff.t, res.t1$eff, res.t2$eff)
+cbind(res.it$eff.t, res.ba$eff.t, res.t1$eff, res.t2$eff)
 
 df.io
 

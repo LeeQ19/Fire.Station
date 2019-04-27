@@ -3,7 +3,7 @@
 #########################################################################################################################
 
 # Load library and functions
-pkgs <- c("DJL")
+pkgs <- c("DJL", "ggplot2")
 sapply(pkgs, require, character.only = T)
 source("dm.dynamic.ba.R")
 source("dm.dea.intertemporal.R")
@@ -85,6 +85,20 @@ table.3.3 <- rbind(df.aggr[id.yj + 33 * 0:4, -7],
 rownames(table.3.3) <- c(2012:2016, paste0("Avg.", 2012:2016))
 round(t(table.3.3[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
 
+
 # Budget available at each T
-df.A.t <- array(df.Z.0, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))
-for(i in 2:dim(df.3d)[3]){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}
+df.B.t <- array(df.2d$Budget.spent, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))
+{df.A.t <- array(df.Z.0, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))
+for(i in 2:dim(df.3d)[3]){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}}
+df.B.share <- df.B.t/df.A.t
+
+
+# Figure 3 Budget ratio/Efficiency (740*415)
+ggplot() + 
+  geom_point(aes(x = df.Z.T/df.Z.0, y = res.ba$eff), 
+             size = 2, color = "red") + 
+  coord_cartesian(xlim = c(0, 0.05), ylim = c(0.4, 1)) + 
+  geom_line(stat = "smooth", method = lm,
+            aes(x = df.Z.T/df.Z.0, y = res.ba$eff), 
+            size = 1.0, color = "blue") + 
+  labs(x = "Remained Budget/Secured Budget", y = "Efficiency")

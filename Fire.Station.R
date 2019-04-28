@@ -89,8 +89,16 @@ round(t(table.3.3[c(1, 6, 2, 7, 3, 8, 4, 9, 5, 10),]), 2)
 # Budget available at each T
 df.B.t <- array(df.2d$Budget.spent, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))
 {df.A.t <- array(df.Z.0, dim(df.3d)[c(1, 3)], dimnames = list(unique(df.2d$DMU), 2012:2016))
-for(i in 2:dim(df.3d)[3]){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}}
-df.B.share <- df.B.t/df.A.t
+  for(i in 2:dim(df.3d)[3]){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}}
+df.B.share <- df.B.t/df.A.t*100
+
+# Table 4
+id.eff <- which(round(res.ba$eff, 6) == 1)
+{df.A.t <- array(df.Z.0, c(dim(df.3d)[1], dim(df.3d)[3] + 1), dimnames = list(unique(df.2d$DMU), 2012:2017))
+  for(i in 2:ncol(df.A.t)){df.A.t[, i] <- df.A.t[, i - 1] - df.3d[, id.z, (i - 1), drop = F]}
+  df.A.t <- df.A.t/df.A.t[, 1]*100}
+table.4 <- rbind(df.B.share[id.eff, ], avg = colMeans(df.B.share))
+round(table.4, 2)
 
 
 # Figure 3 Budget ratio/Efficiency (740*415)

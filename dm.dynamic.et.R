@@ -1,4 +1,4 @@
-dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orientation = "i"){
+dm.dynamic.et <- function(xdata, ydata, zdata, finalz, rts = "crs", orientation = "i"){
   # Load library
   #library(lpSolveAPI)
   
@@ -20,7 +20,7 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
   t        <- dim(xdata)[3]
   
   # Data frames
-  results.efficiency   <- array(NA, dim = c(n, 1))
+  results.efficiency.s <- array(NA, dim = c(n, 1))
   results.lambda       <- array(NA, dim = c(n, n))
   results.efficiency.t <- array(NA, dim = c(n, t))
   results.xslack       <- array(NA, dim = c(n, m, t))
@@ -107,38 +107,38 @@ dm.dea.intertemporal <- function(xdata, ydata, zdata, finalz, rts = "crs", orien
     solve.lpExtPtr(lp.it)
     
     # Get results
-    results.efficiency[j]     <- abs(get.objective(lp.it))
+    results.efficiency.s[j]   <- abs(get.objective(lp.it))
     temp.p                    <- get.variables(lp.it)
     results.efficiency.t[j, ] <- temp.p[p.eff:(p.xsl - 1)]
     
     # Stage II
     # Link previous solutions
-    add.constraint(lp.it, rep(1, t), indices = c(p.eff:(p.xsl - 1)), "=", results.efficiency.t[j])
-
+    for(k in 1:t){add.constraint(lp.it, c(1), indices = c(p.eff + k - 1), "=", results.efficiency.t[j, k])}
+    
     # Slack sum max
     set.objfn(lp.it, c(rep(-1, (p.end - p.xsl))), indices = c(p.xsl:(p.end - 1)))
-
+    
     # Solve
     solve.lpExtPtr(lp.it)
-
+    
     # Get results
-    temp.s                <- get.variables(lp.it)
-    results.lambda[j, ]   <- temp.s[1:n]
-    results.xslack[j, , ] <- array(temp.s[p.xsl:(p.zsl - 1)], c(m, t))
-    results.zslack[j, , ] <- array(temp.s[p.zsl:(p.ysl - 1)], c(b, t))
-    results.yslack[j, , ] <- array(temp.s[p.ysl:(p.isl - 1)], c(s, t))
-    results.islack[j, , ] <- array(temp.s[p.isl:(p.fsl - 1)], c(b, t))
-    results.fslack[j, , ] <- array(temp.s[p.fsl:(p.end - 1)], c(b, t))
+    temp.s              <- get.variables(lp.it)
+    results.lambda[j, ] <- temp.s[1:n]
+    results.xslack[j,,] <- array(temp.s[p.xsl:(p.zsl - 1)], c(m, t))
+    results.zslack[j,,] <- array(temp.s[p.zsl:(p.ysl - 1)], c(b, t))
+    results.yslack[j,,] <- array(temp.s[p.ysl:(p.isl - 1)], c(s, t))
+    results.islack[j,,] <- array(temp.s[p.isl:(p.fsl - 1)], c(b, t))
+    results.fslack[j,,] <- array(temp.s[p.fsl:(p.end - 1)], c(b, t))
   }
   
   # Store results
-  results <- list(eff     = results.efficiency, 
-                  eff.t   = results.efficiency.t, 
-                  lambda  = results.lambda, 
-                  xslack  = results.xslack, 
-                  yslack  = results.yslack, 
-                  zslack  = results.zslack, 
-                  islack  = results.islack, 
-                  fslack  = results.fslack)
+  results <- list(eff.s  = results.efficiency.s, 
+                  eff.t  = results.efficiency.t, 
+                  lambda = results.lambda, 
+                  xslack = results.xslack, 
+                  yslack = results.yslack, 
+                  zslack = results.zslack, 
+                  islack = results.islack, 
+                  fslack = results.fslack)
   return(results)
 }
